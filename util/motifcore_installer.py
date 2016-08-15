@@ -40,9 +40,6 @@ def install(motifcore_path, motifcore_script_path, device):
 	os.system("adb -s " + device + " push " + motifcore_path + " /system/framework")
 	os.system("adb -s " + device + " push " + motifcore_script_path + " /system/bin")
 
-	# recover permission
-	os.system("adb -s " + device + " shell mount -o ro,remount /system")
-
 
 if __name__ == "__main__":
 	os.chdir("..")
