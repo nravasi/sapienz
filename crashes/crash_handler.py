@@ -31,6 +31,7 @@
 
 import subprocess
 import os
+from util.safe_adb import adb
 
 
 def handle(device, apk_dir, script_path, gen, pop, index, unique_crashes):
@@ -43,15 +44,13 @@ def handle(device, apk_dir, script_path, gen, pop, index, unique_crashes):
 	:return: True if it is a real crash
 	"""
 
-	p = subprocess.Popen("adb -s " + device + " shell ls /mnt/sdcard/bugreport.crash", stdout=subprocess.PIPE,
-						 stderr=subprocess.PIPE, shell=True)
-	output, errors = p.communicate()
-	if output.find("No such file or directory") != -1:
+	output = adb("-s " + device + " shell ls /mnt/sdcard/bugreport.crash")
+	if "No such file or directory" in output:
 		# no crash
 		pass
 	else:
 		# save the crash report
-		os.system("adb -s " + device + " pull /mnt/sdcard/bugreport.crash " + apk_dir + "/")
+		adb("-s " + device + " pull /mnt/sdcard/bugreport.crash " + apk_dir + "/")
 		# filter duplicate crashes
 		with open(apk_dir + "/bugreport.crash") as bug_report_file:
 			content = ""
@@ -59,12 +58,12 @@ def handle(device, apk_dir, script_path, gen, pop, index, unique_crashes):
 				if line_no == 0:
 					# should not caused by android itself
 					if line.startswith("// CRASH: com.android."):
-						os.system("adb -s " + device + " shell rm /mnt/sdcard/bugreport.crash")
+						adb("-s " + device + " shell rm /mnt/sdcard/bugreport.crash")
 						return False
 					continue
 				content += line
 			if content in unique_crashes:
-				os.system("adb -s " + device + " shell rm /mnt/sdcard/bugreport.crash")
+				adb("-s " + device + " shell rm /mnt/sdcard/bugreport.crash")
 				return False
 			else:
 				unique_crashes.add(content)
@@ -76,8 +75,8 @@ def handle(device, apk_dir, script_path, gen, pop, index, unique_crashes):
 		os.system("cp " + script_path + " " + apk_dir + "/crashes/" + "script." + str(gen) + "." + str(pop) + "." + str(
 			index))
 		print "### Caught a crash."
-		os.system("adb -s " + device + " shell rm /mnt/sdcard/bugreport.crash")
+		adb("-s " + device + " shell rm /mnt/sdcard/bugreport.crash")
 		return True
 
-	os.system("adb -s " + device + " shell rm /mnt/sdcard/bugreport.crash")
+	adb("-s " + device + " shell rm /mnt/sdcard/bugreport.crash")
 	return False

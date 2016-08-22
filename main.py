@@ -36,6 +36,7 @@ import pickle
 import datetime
 import subprocess
 import platform
+import time
 import numpy
 from deap import creator, base, tools
 from algorithms import eaMuPlusLambdaParallel
@@ -44,10 +45,11 @@ from coverages import emma_coverage
 from coverages import ella_coverage
 from coverages import act_coverage
 from plot import two_d_line
-from devices import emulator
+from devices import real_device
 from crashes import crash_handler
 from analysers import static_analyser
 from init import initRepeatParallel
+from util.safe_adb import adb
 
 
 class CanNotInitSeqException(Exception):
@@ -84,7 +86,7 @@ def get_sequence(device, apk_dir, package_name, index, unique_crashes):
 	ret = []
 
 	# clear data
-	os.system("adb -s " + device + " shell pm clear " + package_name)
+	adb("-s " + device + " shell pm clear " + package_name)
 
 	# start motifcore
 	print "... Start generating a sequence"
@@ -96,14 +98,13 @@ def get_sequence(device, apk_dir, package_name, index, unique_crashes):
 	os.system(settings.TIMEOUT_CMD + " " + str(settings.EVAL_TIMEOUT) + " " + cmd)
 	# need to kill motifcore when timeout
 	kill_motifcore_cmd = "shell ps | awk '/com\.android\.commands\.motifcore/ { system(\"adb -s " + device + " shell kill \" $2) }'"
-	os.system("adb -s " + device + " " + kill_motifcore_cmd)
+	adb("-s " + device + " " + kill_motifcore_cmd)
 
 	print "... Finish generating a sequence"
 	# access the generated script, should ignore the first launch activity
 	script_name = settings.MOTIFCORE_SCRIPT_PATH.split("/")[-1]
 	ts = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S.%f")[:-3]
-	os.system(
-		"adb -s " + device + " pull " + settings.MOTIFCORE_SCRIPT_PATH + " " + apk_dir + "/intermediate/" + script_name + ".init." + ts + "." + str(
+	adb("-s " + device + " pull " + settings.MOTIFCORE_SCRIPT_PATH + " " + apk_dir + "/intermediate/" + script_name + ".init." + ts + "." + str(
 			index))
 	script = open(apk_dir + "/intermediate/" + script_name + ".init." + ts + "." + str(index))
 	is_content = False
@@ -276,14 +277,15 @@ def main(instrumented_app_dir):
 
 	print "### Working on apk:", package_name
 
-	# get emulator device
+	# get real device
 	print "Preparing devices ..."
-	emulator.boot_devices()
-	emulator.prepare_motifcore()
-	emulator.clean_sdcard()
+	# use adbd-insecure if needed: http://forum.xda-developers.com/showthread.php?t=1687590
+	real_device.adb_root()
+	real_device.prepare_motifcore()
+	time.sleep(5)
 
 	# log the devices
-	devices = emulator.get_devices()
+	devices = real_device.get_devices()
 
 	# static analysis
 	if settings.ENABLE_STRING_SEEDING:
@@ -302,9 +304,9 @@ def main(instrumented_app_dir):
 			decoded_dir = instrumented_app_dir + "/bin/" + apk_path.split("/")[-1].split(".apk")[0]
 		static_analyser.upload_string_xml(device, decoded_dir, package_name)
 
-		os.system("adb -s " + device + " shell rm /mnt/sdcard/bugreport.crash")
-		os.system("adb -s " + device + " uninstall " + package_name)
-		os.system("adb -s " + device + " install " + apk_path)
+		adb("-s " + device + " shell rm /mnt/sdcard/bugreport.crash")
+		adb("-s " + device + " uninstall " + package_name)
+		adb("-s " + device + " install " + apk_path)
 
 	# intermediate should be in app folder
 	os.system("rm -rf " + instrumented_app_dir + "/intermediate")

@@ -37,6 +37,7 @@ import subprocess as sub
 import settings
 from util import motifcore_installer
 from util import pack_and_deploy
+from util.safe_adb import adb
 
 
 def get_devices():
@@ -87,10 +88,10 @@ def boot_devices():
 
 def clean_sdcard():
 	for device in get_devices():
-		os.system("adb -s " + device + " shell mount -o rw,remount rootfs /")
-		os.system("adb -s " + device + " shell chmod 777 /mnt/sdcard")
+		adb("-s " + device + " shell mount -o rw,remount rootfs /")
+		adb("-s " + device + " shell chmod 777 /mnt/sdcard")
 
-		os.system("adb -s " + device + " shell rm -rf /mnt/sdcard/*")
+		adb("-s " + device + " shell rm -rf /mnt/sdcard/*")
 
 
 def prepare_motifcore():
@@ -105,7 +106,7 @@ def pack_and_deploy_aut():
 
 def destory_devices():
 	# for device in get_devices():
-	# 	os.system("adb -s " + device + " emu kill")
+	# 	adb("-s " + device + " emu kill")
 	# do force kill
 	os.system("kill -9  $(ps aux | grep 'emulator' | awk '{print $2}')")
 

@@ -16,14 +16,14 @@ TIMEOUT_CMD = "timeout"
 
 # === Env. Paths ===
 # path should end with a '/'
-ANDROID_HOME = '/'
+ANDROID_HOME = '/opt/android-sdk/'
 # the path of sapienz folder
-WORKING_DIR = '/'
+WORKING_DIR = '/home/qguv/dev/sapienz/'
 
 
 # === GA parameters ===
-SEQUENCE_LENGTH_MIN = 20
-SEQUENCE_LENGTH_MAX = 500
+SEQUENCE_LENGTH_MIN = 90
+SEQUENCE_LENGTH_MAX = 110
 SUITE_SIZE = 5
 POPULATION_SIZE = 50
 OFFSPRING_SIZE = 50

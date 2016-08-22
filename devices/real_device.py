@@ -36,6 +36,7 @@ import time
 import settings
 from util import motifcore_installer
 from util import pack_and_deploy
+from util.safe_adb import adb
 
 
 def get_devices():
@@ -48,7 +49,7 @@ def get_devices():
 	os.system("kill -9 $(lsof -i:5037 | tail -n +2 | awk '{print $2}')")
 	os.system("killall adb")
 	print "### adb devices"
-	os.system("adb devices")
+	adb("devices")
 
 	ret = []
 	p = sub.Popen('adb devices', stdout=sub.PIPE, stderr=sub.PIPE, shell=True)
@@ -79,7 +80,7 @@ def reboot_all_devices():
 	"""
 	adb_root()
 	for device in get_devices():
-		os.system("adb -s " + device + " reboot")
+		adb("-s " + device + " reboot")
 
 	time.sleep(settings.AVD_BOOT_DELAY)
 	adb_root()
@@ -87,28 +88,26 @@ def reboot_all_devices():
 
 def adb_root():
 	for device in get_devices():
-		os.system("adb -s " + device + " root")
+		adb("-s " + device + " root")
 
 
 def disable_systemui():
 	for device in get_devices():
-		os.system("adb -s " + device + " shell service call activity 42 s16 com.android.systemui")
+		adb("-s " + device + " shell service call activity 42 s16 com.android.systemui")
 
 
 def prepare_motifcore():
 	for device in get_devices():
-		motifcore_installer.install(settings.WORKING_DIR + "lib/motifcore.jar", settings.WORKING_DIR + "resources/motif", device)
+		motifcore_installer.install(settings.WORKING_DIR + "lib/motifcore.jar", settings.WORKING_DIR + "resources/motifcore", device)
 
 
 def kill_motifcore(device):
-	os.system(
-		"adb -s " + device + " shell ps | awk '/com\.android\.commands\.motifcore/ { system(\"adb -s " + device + " shell kill \" $2) }'")
+	adb("-s " + device + " shell ps | awk '/com\.android\.commands\.motifcore/ { system(\"adb -s " + device + " shell kill \" $2) }'")
 
 
 def kill_all_motifcore():
 	for device in get_devices():
-		os.system(
-			"adb -s " + device + " shell ps | awk '/com\.android\.commands\.motifcore/ { system(\"adb -s " + device + " shell kill \" $2) }'")
+		adb("-s " + device + " shell ps | awk '/com\.android\.commands\.motifcore/ { system(\"adb -s " + device + " shell kill \" $2) }'")
 
 
 def pack_and_deploy_aut():
@@ -119,14 +118,14 @@ def pack_and_deploy_aut():
 def clean_device_app(device, package_name):
 	os.system("kill -9 $(lsof -i:5037 | tail -n +2 | awk '{print $2}')")
 	os.system("killall adb")
-	os.system("adb devices")
+	adb("devices")
 
 	print "### kill motifcore ..."
 	kill_motifcore(device)
-	os.system("adb -s " + device + " shell pm clear " + package_name)
-	os.system("adb -s " + device + " shell am force-stop " + package_name)
-	os.system("adb -s " + device + " uninstall " + package_name)
-	os.system("adb -s " + device + " shell rm /mnt/sdcard/bugreport.crash")
+	adb("-s " + device + " shell pm clear " + package_name)
+	adb("-s " + device + " shell am force-stop " + package_name)
+	adb("-s " + device + " uninstall " + package_name)
+	adb("-s " + device + " shell rm /mnt/sdcard/bugreport.crash")
 	print "### clean device app finished"
 
 

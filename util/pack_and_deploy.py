@@ -37,6 +37,7 @@ import xml.etree.cElementTree as ET
 from lxml import etree
 
 import settings
+from util.safe_adb import adb
 
 
 def compile_apk(path, package_name, devices):
@@ -47,8 +48,8 @@ def compile_apk(path, package_name, devices):
 	print "... uninstall existed version"
 
 	for device in devices:
-		os.system("adb -s " + device + " uninstall " + package_name)
-		os.system("adb -s " + device + " install " + path + "/bin/bugroid-instrumented.apk")
+		adb("-s " + device + " uninstall " + package_name)
+		adb("-s " + device + " install " + path + "/bin/bugroid-instrumented.apk")
 
 	# start_target = "adb -s " + device + " shell am instrument " + package_name + "/" + package_name + ".EmmaInstrument.EmmaInstrumentation"
 	# os.system( start_target )

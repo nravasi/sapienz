@@ -30,15 +30,17 @@
 
 
 import os
+from util.safe_adb import adb
 
 
 def install(motifcore_path, motifcore_script_path, device):
 	# obtain write permission
-	os.system("adb -s " + device + " shell mount -o rw,remount /system")
+	adb("-s " + device + " root")
+	adb("-s " + device + " remount")
 
 	# push
-	os.system("adb -s " + device + " push " + motifcore_path + " /system/framework")
-	os.system("adb -s " + device + " push " + motifcore_script_path + " /system/bin")
+	adb("-s " + device + " push " + motifcore_path + " /system/framework")
+	adb("-s " + device + " push " + motifcore_script_path + " /system/bin")
 
 
 if __name__ == "__main__":
