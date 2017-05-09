@@ -33,6 +33,7 @@ import random
 import os
 import sys
 import pickle
+import time
 import datetime
 import subprocess
 import platform
@@ -122,6 +123,7 @@ def get_sequence(device, apk_dir, package_name, index, unique_crashes):
 
 	script.close()
 
+	print "dealing with crash"
 	# deal with crash
 	crash_handler.handle(device, apk_dir, apk_dir + "/intermediate/" + script_name + ".init." + ts + "." + str(index),
 						 "init", ts, index, unique_crashes)
@@ -258,6 +260,8 @@ def main(instrumented_app_dir):
 	Test one apk
 	:param instrumented_app_dir: The instrumentation folder of the app | apk file path for closed-source app
 	"""
+	start_time = time.time()
+	print "!+! START TIME IS " + str(start_time)
 
 	host_system = platform.system()
 	if host_system == "Darwin":
@@ -280,7 +284,7 @@ def main(instrumented_app_dir):
 	print "Preparing devices ..."
 	emulator.boot_devices()
 	emulator.prepare_motifcore()
-	emulator.clean_sdcard()
+	# emulator.clean_sdcard()
 
 	# log the devices
 	devices = emulator.get_devices()
@@ -350,7 +354,7 @@ def main(instrumented_app_dir):
 														ngen=settings.GENERATION,
 														apk_dir=instrumented_app_dir,
 														package_name=package_name,
-														stats=stats, halloffame=hof, verbose=True)
+														stats=stats, halloffame=hof, verbose=True, start_time=start_time, time_limit=settings.TIME_LIMIT)
 
 	# persistent
 	logbook_file = open(instrumented_app_dir + "/intermediate/logbook.pickle", 'wb')

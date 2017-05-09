@@ -57,7 +57,7 @@ def evaluate_in_parallel(eval_suite_parallel, individuals, apk_dir, package_name
 		individuals[i].fitness.values = fitness
 
 
-def evolve(population, toolbox, mu, lambda_, cxpb, mutpb, ngen, apk_dir, package_name,
+def evolve(population, toolbox, mu, lambda_, cxpb, mutpb, ngen, apk_dir, package_name, start_time, time_limit,
 		   stats=None, halloffame=None, verbose=__debug__):
 	logbook = tools.Logbook()
 	logbook.header = ['gen', 'nevals'] + (stats.fields if stats else [])
@@ -126,6 +126,14 @@ def evolve(population, toolbox, mu, lambda_, cxpb, mutpb, ngen, apk_dir, package
 		logbook_file = open(apk_dir + "/intermediate/logbook.pickle", 'wb')
 		pickle.dump(logbook, logbook_file)
 		logbook_file.close()
+		if time_limit > 0:
+			current_time = time.time()
+			print "!+! CURRENT TIME IS " + str(current_time)
+			print "!+! elapsed time " + str((current_time -start_time)/60)
+
+			if current_time > start_time + time_limit * 60:
+				print "!+! yup! breaking!"
+				break
 
 	return population, logbook
 

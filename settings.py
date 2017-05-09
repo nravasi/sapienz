@@ -1,33 +1,34 @@
 DEBUG = False
 # if False, "0" will be used
-ENABLE_STRING_SEEDING = True
+ENABLE_STRING_SEEDING = False
 # use headless evaluator
 HEADLESS = False
 
 
 # === Emulator ===
-DEVICE_NUM = 1
-AVD_BOOT_DELAY = 30
+DEVICE_NUM = 0
+AVD_BOOT_DELAY = 5
 AVD_SERIES = "api19_"
-EVAL_TIMEOUT = 120
+EVAL_TIMEOUT = 100
 # if run on Mac OS, use "gtimeout"
-TIMEOUT_CMD = "timeout"
+TIMEOUT_CMD = "gtimeout"
+TIME_LIMIT = 30
 
 
 # === Env. Paths ===
 # path should end with a '/'
-ANDROID_HOME = '/'
+ANDROID_HOME = '/Users/nmravasi/Library/Android/sdk/'
 # the path of sapienz folder
-WORKING_DIR = '/'
+WORKING_DIR = '/Users/nmravasi/dev/thesis/sapienz/'
 
 
 # === GA parameters ===
-SEQUENCE_LENGTH_MIN = 20
-SEQUENCE_LENGTH_MAX = 500
+SEQUENCE_LENGTH_MIN = 100
+SEQUENCE_LENGTH_MAX = 1000
 SUITE_SIZE = 5
-POPULATION_SIZE = 50
-OFFSPRING_SIZE = 50
-GENERATION = 100
+POPULATION_SIZE = 10
+OFFSPRING_SIZE = 10
+GENERATION = 10
 # Crossover probability
 CXPB = 0.7
 # Mutation probability
